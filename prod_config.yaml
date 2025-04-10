@@ -1,0 +1,35 @@
+
+data:
+  ## graph datsets: cora, pubmed, citeseer
+  ## hypergraph datasets: news20, ca_cora, cc_cora, cc_citeseer, dblp4k_conf, dblp4k_paper, dblp4k_term, imdb_aw, recipe_100k, recipe_200k
+  # create new dataset: create_data
+  name: dblp4k_paper
+  num_train: 20 # [5,10,20,50,100,200,500]
+  num_val: 100
+  test_ind_ratio: 0.9
+  ft_noise_level: 0.0
+  hc_noise_level: 1.0
+
+model: 
+  teacher: hgnn  # hgnn, hgnnp, hnhn, unigcn
+  student: KAN # MLP, KAN
+  new_stu_e: light_hgnnp  # light_hgnn, light_hgnnp
+  new_stu_v: hgnn2kanp # hgnn2kan, hgnn2kanp
+  hid: 128
+
+loss:
+  lamb: 0 # [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+  tau: 0.5
+
+data_marker: ${data.name}__${data.num_train}-${data.num_val}-${data.test_ind_ratio}__noise-${data.ft_noise_level}-${data.hc_noise_level}
+model_marker: ${model.teacher}-${model.new_stu_e}-${model.new_stu_v}__hid-${model.hid}
+loss_marker: lamb-${loss.lamb}__tau-${loss.tau}
+task: ${data_marker}__${model_marker}__${loss_marker}
+res_path: cache/ind/${task}
+
+hydra:
+  run:
+    dir: ${res_path}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: ${res_path}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+    subdir: ${hydra.job.num}

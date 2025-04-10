@@ -1,0 +1,33 @@
+data:
+  ## graph datsets: cora, pubmed, citeseer
+  ## hypergraph datasets: news20, ca_cora, cc_cora, cc_citeseer, dblp4k_conf, dblp4k_paper, dblp4k_term, imdb_aw
+  name: dblp4k_paper
+  num_train: 20
+  num_val: 100
+  ft_noise_level: 0.0
+  hc_noise_level: 1.0
+
+model: 
+  teacher: hgnn # gcn, hgnn, hgnnp, hnhn, unigcn
+  t_hid: 32
+  new_stu: light_hgnnp # light_hgnn, light_hgnnp
+  s_hid: 128
+  student: KAN # MLP, KAN
+  new_v_stu: hgnn2kanp # hgnn2kan, hgnn2kanp
+
+loss:
+  lamb: 0
+  tau: 0.5
+
+data_marker: ${data.name}__${data.num_train}-${data.num_val}__noise-${data.ft_noise_level}-${data.hc_noise_level}
+model_marker: ${model.teacher}-${model.new_stu}-${model.student}__hid-${model.s_hid}
+loss_marker: lamb-${loss.lamb}__tau-${loss.tau}
+task: ${data_marker}__${model_marker}__${loss_marker}
+res_path: cache/trans/${task}
+
+hydra:
+  run:
+    dir: ${res_path}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: ${res_path}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+    subdir: ${hydra.job.num}
